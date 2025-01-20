@@ -24,21 +24,32 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
-    // Check for saved user in localStorage
-    const savedUser = localStorage.getItem("user")
-    if (savedUser) {
-      setUser(JSON.parse(savedUser))
+    // Check auth status on mount
+    const checkAuth = async () => {
+      try {
+        const response = await fetch('/api/auth/check')
+        if (response.ok) {
+          const data = await response.json()
+          setUser(data.user)
+        }
+      } catch (error) {
+        console.error('Auth check failed:', error)
+      }
     }
+    checkAuth()
   }, [])
 
   const login = (user: User) => {
     setUser(user)
-    localStorage.setItem("user", JSON.stringify(user))
   }
 
-  const logout = () => {
-    setUser(null)
-    localStorage.removeItem("user")
+  const logout = async () => {
+    try {
+      await fetch('/api/auth/logout', { method: 'POST' })
+      setUser(null)
+    } catch (error) {
+      console.error('Logout failed:', error)
+    }
   }
 
   return <AuthContext.Provider value={{ user, login, logout, error, setError }}>{children}</AuthContext.Provider>
@@ -51,4 +62,3 @@ export function useAuth() {
   }
   return context
 }
-
