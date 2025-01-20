@@ -13,12 +13,15 @@ interface AuthContextType {
   user: User | null
   login: (user: User) => void
   logout: () => void
+  error: string | null
+  setError: (error: string | null) => void
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
+  const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
     // Check for saved user in localStorage
@@ -38,7 +41,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     localStorage.removeItem("user")
   }
 
-  return <AuthContext.Provider value={{ user, login, logout }}>{children}</AuthContext.Provider>
+  return <AuthContext.Provider value={{ user, login, logout, error, setError }}>{children}</AuthContext.Provider>
 }
 
 export function useAuth() {
