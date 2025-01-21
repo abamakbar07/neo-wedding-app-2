@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { useAuth } from "../../contexts/AuthContext"
 import Link from "next/link"
@@ -14,7 +14,17 @@ export default function Login() {
   const [password, setPassword] = useState("")
   const [error, setError] = useState("")
   const router = useRouter()
-  const { login } = useAuth()
+  const { login, user, loading } = useAuth()
+
+  useEffect(() => {
+    if (!loading && user) {
+      router.push("/")
+    }
+  }, [user, loading, router])
+
+  if (loading) {
+    return <div>Loading...</div>
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()

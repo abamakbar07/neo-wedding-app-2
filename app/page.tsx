@@ -6,17 +6,21 @@ import { useAuth } from "../contexts/AuthContext"
 import Link from "next/link"
 
 export default function Home() {
-  const { user } = useAuth()
+  const { user, loading } = useAuth()
   const router = useRouter()
 
   useEffect(() => {
-    if (!user) {
+    if (!loading && !user) {
       router.push("/login")
     }
-  }, [user, router])
+  }, [user, loading, router])
+
+  if (loading) {
+    return <div>Loading...</div> // Add a loading spinner or skeleton here
+  }
 
   if (!user) {
-    return null // or a loading spinner
+    return null
   }
 
   return (
