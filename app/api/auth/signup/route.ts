@@ -2,6 +2,7 @@ import { NextResponse } from "next/server"
 import dbConnect from "../../../../lib/mongoose"
 import User from "../../../../models/User"
 import bcrypt from "bcryptjs"
+import { signJWT } from "../../../../lib/jwt"
 
 export async function POST(request: Request) {
   await dbConnect()
@@ -25,10 +26,23 @@ export async function POST(request: Request) {
       password: hashedPassword,
     })
 
+    // Generate JWT token
+    const token = await signJWT({ id: newUser._id.toString(), email: newUser.email })
+
     // Don't send the password in the response
     const { password: _, ...userWithoutPassword } = newUser.toObject()
 
-    return NextResponse.json({ user: userWithoutPassword })
+    // Set JWT as HTTP-only cookie
+    const response = NextResponse.json({ user: userWithoutPassword })
+    response.cookies.set('token', token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'strict',
+      maxAge: 7 * 24 * 60 * 60, // 7 days
+      path: '/',
+    })
+
+    return response
   } catch (error) {
     console.error("Signup error:", error)
     return NextResponse.json({ error: "Internal Server Error" }, { status: 500 })

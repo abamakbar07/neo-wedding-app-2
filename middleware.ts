@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
 import { verifyJWT } from './lib/jwt'
 
-export function middleware(request: NextRequest) {
+export async function middleware(request: NextRequest) {
   // Paths that require authentication
   const protectedPaths = ['/profile', '/events', '/create-event']
   
@@ -16,10 +16,16 @@ export function middleware(request: NextRequest) {
   const token = request.cookies.get('token')?.value
 
   if (!token) {
+    console.log("token?")
     return NextResponse.redirect(new URL('/login', request.url))
   }
 
-  const payload = verifyJWT(token)
+  console.log("token: ", token)
+  
+  const payload = await verifyJWT(token)
+  
+  console.log(payload)
+
   if (!payload) {
     return NextResponse.redirect(new URL('/login', request.url))
   }

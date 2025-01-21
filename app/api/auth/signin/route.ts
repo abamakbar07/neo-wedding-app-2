@@ -22,7 +22,7 @@ export async function POST(request: Request) {
     }
 
     // Generate JWT token
-    const token = signJWT({ id: user._id.toString(), email: user.email })
+    const token = await signJWT({ id: user._id.toString(), email: user.email })
 
     // Don't send the password in the response
     const { password: _, ...userWithoutPassword } = user.toObject()
