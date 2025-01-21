@@ -6,7 +6,8 @@ import Image from "next/image"
 import { useAuth } from "../../../contexts/AuthContext"
 import EventCustomizer from "../../components/EventCustomizer"
 import { Button } from "@/components/ui/button"
-import { MapPin, Phone, Gift, Clock } from "lucide-react"
+import { MapPin, Phone, Gift, Clock, Share2 } from "lucide-react"
+import { toast } from "sonner"
 
 interface Event {
   _id: string
@@ -68,8 +69,30 @@ export default function EventPage() {
     fetchEvent()
   }, [id])
 
+  const handleShare = async () => {
+    try {
+      const shareUrl = window.location.href
+      if (navigator.share) {
+        await navigator.share({
+          title: event?.title,
+          text: `Join us at ${event?.title}!`,
+          url: shareUrl,
+        })
+      } else {
+        await navigator.clipboard.writeText(shareUrl)
+        toast.success("Link copied to clipboard!")
+      }
+    } catch (error) {
+      console.error("Error sharing:", error)
+    }
+  }
+
   if (!event) {
-    return <div>Loading...</div>
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-gray-900"></div>
+      </div>
+    )
   }
 
   const { customization } = event
@@ -86,7 +109,7 @@ export default function EventPage() {
     backgroundPosition: "center",
   }
 
-  if (isEditing) {
+  if (isEditing && user?.id === event.creator) {
     return <EventCustomizer eventId={event._id} initialCustomization={customization} />
   }
 
@@ -94,11 +117,24 @@ export default function EventPage() {
     <div className={`max-w-4xl mx-auto mt-8 ${customization.layout}`} style={containerStyle}>
       <div className="relative h-64 rounded-t-lg overflow-hidden" style={heroStyle}>
         <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center">
-          <h1 className="text-4xl font-bold text-white">{event.title}</h1>
+          <h1 className="text-4xl font-bold text-white px-4 text-center">{event.title}</h1>
         </div>
       </div>
       
       <div className="bg-white shadow-md rounded-b-lg p-6">
+        {/* Share Button */}
+        <div className="flex justify-end mb-4">
+          <Button 
+            variant="outline" 
+            size="sm" 
+            className="gap-2"
+            onClick={handleShare}
+          >
+            <Share2 className="w-4 h-4" />
+            Share
+          </Button>
+        </div>
+
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {/* Date and Time */}
           <div className="space-y-2">
@@ -198,10 +234,10 @@ export default function EventPage() {
           </div>
         )}
 
-        {/* Admin Controls */}
+        {/* Admin Controls - Only visible to event creator */}
         {user && user.id === event.creator && (
           <div className="mt-8">
-            <Button onClick={() => setIsEditing(true)} className="bg-blue-500 text-white">
+            <Button onClick={() => setIsEditing(true)} className="bg-primary hover:bg-primary/90">
               Edit Event
             </Button>
           </div>

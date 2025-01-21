@@ -19,12 +19,10 @@ export default function RootLayout({
     <html lang="en">
       <body className={inter.className}>
         <AuthProvider>
-          <div className="min-h-screen bg-gray-100">
+          <div className="min-h-screen bg-gray-50">
             <Navigation />
-            <main className="pb-20 md:pt-20 md:pb-0">
-              <div className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
-                {children}
-              </div>
+            <main className="pb-20 md:pl-64 md:pb-0">
+              {children}
             </main>
           </div>
         </AuthProvider>

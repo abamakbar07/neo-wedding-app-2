@@ -3,10 +3,23 @@ import type { NextRequest } from 'next/server'
 import { verifyJWT } from './lib/jwt'
 
 export async function middleware(request: NextRequest) {
-  // Paths that require authentication
-  const protectedPaths = ['/profile', '/events', '/create-event']
-  
   const path = request.nextUrl.pathname
+  
+  // Allow public access to individual event pages
+  if (path.match(/^\/events\/[^/]+$/)) {
+    return NextResponse.next()
+  }
+
+  // Paths that require authentication
+  const protectedPaths = [
+    '/profile',
+    '/events',
+    '/create-event',
+    '/favorites',
+    '/search',
+    '/events/[id]/customize'
+  ]
+  
   const isProtectedPath = protectedPaths.some(prefix => path.startsWith(prefix))
   
   if (!isProtectedPath) {
@@ -33,5 +46,7 @@ export const config = {
     '/profile/:path*',
     '/events/:path*',
     '/create-event',
+    '/favorites',
+    '/search',
   ],
 }

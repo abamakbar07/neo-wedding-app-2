@@ -6,7 +6,7 @@ export async function GET(request: Request, { params }: { params: { id: string }
   await dbConnect()
   try {
     const { id } = params
-    const event = await Event.findById(id)
+    const event = await Event.findById(id).select('-invitationCode') // Don't expose invitation code to public
     
     if (!event) {
       return NextResponse.json({ error: "Event not found" }, { status: 404 })
