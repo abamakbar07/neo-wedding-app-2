@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
-import { verifyJWT } from '../../lib/jwt'
+import { verifyJWT } from './lib/jwt'
 
 export function middleware(request: NextRequest) {
   // Paths that require authentication
