@@ -16,15 +16,10 @@ export async function middleware(request: NextRequest) {
   const token = request.cookies.get('token')?.value
 
   if (!token) {
-    console.log("token?")
     return NextResponse.redirect(new URL('/login', request.url))
   }
-
-  console.log("token: ", token)
   
   const payload = await verifyJWT(token)
-  
-  console.log(payload)
 
   if (!payload) {
     return NextResponse.redirect(new URL('/login', request.url))
