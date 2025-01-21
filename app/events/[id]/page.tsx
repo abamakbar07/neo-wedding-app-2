@@ -8,11 +8,13 @@ import EventCustomizer from "../../components/EventCustomizer"
 import { Button } from "@/components/ui/button"
 
 interface Event {
-  id: string
+  _id: string
   name: string
   date: string
   description: string
   creator: string
+  invitationCode: string
+  guests: string[]
   customization: {
     layout: "classic" | "modern" | "rustic"
     primaryColor: string
@@ -65,7 +67,7 @@ export default function EventPage() {
   }
 
   if (isEditing) {
-    return <EventCustomizer eventId={event.id} initialCustomization={customization} />
+    return <EventCustomizer eventId={event._id} initialCustomization={customization} />
   }
 
   return (
