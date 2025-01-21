@@ -5,8 +5,9 @@ import { useParams } from "next/navigation"
 import Image from "next/image"
 import { useAuth } from "../../../contexts/AuthContext"
 import EventCustomizer from "../../components/EventCustomizer"
+import EventEditor from "../../components/EventEditor"
 import { Button } from "@/components/ui/button"
-import { MapPin, Phone, Gift, Clock, Share2 } from "lucide-react"
+import { MapPin, Phone, Gift, Clock, Share2, Edit } from "lucide-react"
 import { toast } from "sonner"
 
 interface Event {
@@ -50,6 +51,7 @@ export default function EventPage() {
   const { user } = useAuth()
   const [event, setEvent] = useState<Event | null>(null)
   const [isEditing, setIsEditing] = useState(false)
+  const [isCustomizing, setIsCustomizing] = useState(false)
 
   useEffect(() => {
     const fetchEvent = async () => {
@@ -109,8 +111,16 @@ export default function EventPage() {
     backgroundPosition: "center",
   }
 
-  if (isEditing && user?.id === event.creator) {
+  if (isCustomizing && user?._id === event.creator) {
     return <EventCustomizer eventId={event._id} initialCustomization={customization} />
+  }
+
+  if (isEditing && user?._id === event.creator) {
+    return (
+      <div className="max-w-4xl mx-auto mt-8 bg-white shadow-md rounded-lg p-6">
+        <EventEditor event={event} onCancel={() => setIsEditing(false)} />
+      </div>
+    )
   }
 
   return (
@@ -122,8 +132,8 @@ export default function EventPage() {
       </div>
       
       <div className="bg-white shadow-md rounded-b-lg p-6">
-        {/* Share Button */}
-        <div className="flex justify-end mb-4">
+        {/* Action Buttons */}
+        <div className="flex justify-end gap-2 mb-4">
           <Button 
             variant="outline" 
             size="sm" 
@@ -133,6 +143,27 @@ export default function EventPage() {
             <Share2 className="w-4 h-4" />
             Share
           </Button>
+          {user && user._id === event.creator && (
+            <>
+              <Button 
+                variant="outline" 
+                size="sm" 
+                className="gap-2"
+                onClick={() => setIsEditing(true)}
+              >
+                <Edit className="w-4 h-4" />
+                Edit Details
+              </Button>
+              <Button 
+                variant="outline" 
+                size="sm" 
+                className="gap-2"
+                onClick={() => setIsCustomizing(true)}
+              >
+                Customize Design
+              </Button>
+            </>
+          )}
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -231,15 +262,6 @@ export default function EventPage() {
                 </div>
               </div>
             </div>
-          </div>
-        )}
-
-        {/* Admin Controls - Only visible to event creator */}
-        {user && user.id === event.creator && (
-          <div className="mt-8">
-            <Button onClick={() => setIsEditing(true)} className="bg-primary hover:bg-primary/90">
-              Edit Event
-            </Button>
           </div>
         )}
       </div>

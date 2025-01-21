@@ -24,7 +24,7 @@ export default function Navigation() {
     { href: '/search', icon: Search, label: 'Search' },
     { href: '/create-event', icon: PenSquare, label: 'Create' },
     { href: '/favorites', icon: Heart, label: 'Favorites' },
-    { href: `/profile/${user.id}`, icon: User, label: 'Profile' },
+    { href: `/profile/${user._id}`, icon: User, label: 'Profile' },
   ]
 
   return (
