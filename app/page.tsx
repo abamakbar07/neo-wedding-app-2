@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button"
 import { Plus, Calendar } from "lucide-react"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { User } from "@/contexts/types"
+import StatusCard from "./components/StatusCard"
 
 interface Event {
   _id: string
@@ -27,11 +28,66 @@ interface Event {
   }
 }
 
+interface Status {
+  _id: string;
+  content: string;
+  author: {
+    _id: string;
+    name: string;
+    image?: string;
+  };
+  createdAt: string;
+  likes: string[];
+  images?: string[];
+}
+
 export default function Home() {
   const { user, loading } = useAuth() as { user: User | null, loading: boolean }
   const router = useRouter()
   const [events, setEvents] = useState<Event[]>([])
   const [isLoading, setIsLoading] = useState(true)
+  const [statuses, setStatuses] = useState<Status[]>([])
+  const [page, setPage] = useState(1)
+  const [hasMore, setHasMore] = useState(true)
+  const [isLoadingMore, setIsLoadingMore] = useState(false)
+  const [newStatus, setNewStatus] = useState("")
+
+  const loadMoreStatuses = async () => {
+    if (isLoadingMore || !hasMore) return
+    setIsLoadingMore(true)
+    try {
+      const response = await fetch(`/api/statuses?page=${page + 1}`)
+      const data = await response.json()
+      setStatuses(prev => [...prev, ...data.statuses])
+      setHasMore(data.hasMore)
+      setPage(prev => prev + 1)
+    } catch (error) {
+      console.error("Failed to load more statuses:", error)
+    } finally {
+      setIsLoadingMore(false)
+    }
+  }
+
+  const handlePostSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!newStatus.trim()) return
+
+    try {
+      const response = await fetch("/api/statuses", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ content: newStatus }),
+      })
+
+      if (response.ok) {
+        const data = await response.json()
+        setStatuses(prev => [data, ...prev])
+        setNewStatus("")
+      }
+    } catch (error) {
+      console.error("Failed to post status:", error)
+    }
+  }
 
   useEffect(() => {
     if (!loading && !user) {
@@ -58,6 +114,21 @@ export default function Home() {
       fetchEvents()
     }
   }, [user])
+
+  useEffect(() => {
+    const handleScroll = () => {
+      if (
+        window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 1000
+        && !isLoadingMore
+        && hasMore
+      ) {
+        loadMoreStatuses()
+      }
+    }
+  
+    window.addEventListener("scroll", handleScroll)
+    return () => window.removeEventListener("scroll", handleScroll)
+  }, [isLoadingMore, hasMore])
 
   if (loading || isLoading) {
     return (
@@ -100,23 +171,37 @@ export default function Home() {
                   )}
                 </Avatar>
                 <div className="flex-1">
-                  <textarea
-                    placeholder="Start a thread..."
-                    className="w-full resize-none border-0 bg-transparent text-gray-900 placeholder:text-gray-500 focus:ring-0 sm:text-sm sm:leading-6 min-h-[60px]"
-                  />
-                  <div className="flex justify-end border-t pt-2">
-                    <Button className="bg-primary hover:bg-primary/90">Post</Button>
-                  </div>
+                  <form onSubmit={handlePostSubmit}>
+                    <textarea
+                      value={newStatus}
+                      onChange={(e) => setNewStatus(e.target.value)}
+                      placeholder="What's on your mind?"
+                      className="w-full resize-none border-0 bg-transparent text-gray-900 placeholder:text-gray-500 focus:ring-0 sm:text-sm sm:leading-6 min-h-[60px]"
+                    />
+                    <div className="flex justify-end border-t pt-2">
+                      <Button 
+                        type="submit" 
+                        className="bg-primary hover:bg-primary/90"
+                        disabled={!newStatus.trim()}
+                      >
+                        Post
+                      </Button>
+                    </div>
+                  </form>
                 </div>
               </div>
             </div>
 
-            {/* Feed Area (to be implemented) */}
+            {/* Feed Area */}
             <div className="space-y-4">
-              {/* Placeholder for future posts */}
-              <div className="bg-white rounded-xl shadow-sm p-6 text-center text-gray-500">
-                No posts yet. Start the conversation!
-              </div>
+              {statuses.map((status) => (
+                <StatusCard key={status._id} status={status} />
+              ))}
+              {isLoadingMore && (
+                <div className="flex justify-center p-4">
+                  <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-gray-900"></div>
+                </div>
+              )}
             </div>
           </main>
 
