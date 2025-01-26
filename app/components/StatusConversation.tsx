@@ -109,7 +109,7 @@ export default function StatusConversation({
                 {status.author.image ? (
                   <AvatarImage src={status.author.image} alt={status.author.name} />
                 ) : (
-                  <AvatarFallback>{status.author.name.charAt(0)}</AvatarFallback>
+                  <AvatarFallback>?</AvatarFallback>
                 )}
               </Avatar>
               <div>
@@ -157,7 +157,7 @@ export default function StatusConversation({
                   {comment.author.image ? (
                     <AvatarImage src={comment.author.image} alt={comment.author.name} />
                   ) : (
-                    <AvatarFallback>{comment.author.name.charAt(0)}</AvatarFallback>
+                    <AvatarFallback>{"u"}</AvatarFallback>
                   )}
                 </Avatar>
                 <div className="flex-1">

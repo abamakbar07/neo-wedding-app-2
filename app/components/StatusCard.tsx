@@ -114,7 +114,7 @@ export default function StatusCard({ status, onStatusUpdate }: StatusCardProps) 
           {status.author.image ? (
             <AvatarImage src={status.author.image} alt={status.author.name} />
           ) : (
-            <AvatarFallback>{status.author.name.charAt(0)}</AvatarFallback>
+            <AvatarFallback>?</AvatarFallback>
           )}
         </Avatar>
         <div className="flex flex-col">
@@ -172,7 +172,7 @@ export default function StatusCard({ status, onStatusUpdate }: StatusCardProps) 
                   />
                 ) : (
                   <AvatarFallback>
-                    {status.comments[0].author.name.charAt(0)}
+                    ?
                   </AvatarFallback>
                 )}
               </Avatar>
