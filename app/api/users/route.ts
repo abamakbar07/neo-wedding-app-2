@@ -5,7 +5,7 @@ import { NextResponse } from "next/server"
 export async function GET(request: Request) {
   await dbConnect()
   try {
-    const users = await User.find({}).limit(10)
+    const users = await User.find({request}).limit(10)
     return NextResponse.json(users)
   } catch (e) {
     console.error(e)

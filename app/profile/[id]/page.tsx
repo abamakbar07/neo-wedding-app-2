@@ -31,7 +31,7 @@ export default function ProfilePage() {
           const userData = await response.json()
           setUser(userData)
         } else {
-          console.error("Failed to fetch user data")
+          console.error("Failed to fetch user data", response.status)
         }
       } catch (error) {
         console.error("An error occurred", error)
@@ -45,7 +45,7 @@ export default function ProfilePage() {
           const eventsData = await response.json()
           setEvents(eventsData)
         } else {
-          console.error("Failed to fetch user events")
+          console.error("Failed to fetch user events", response.status)
         }
       } catch (error) {
         console.error("An error occurred", error)
@@ -109,4 +109,3 @@ export default function ProfilePage() {
     </div>
   )
 }
-
