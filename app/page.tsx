@@ -51,6 +51,9 @@ export default function Home() {
   const [hasMore, setHasMore] = useState(true)
   const [isLoadingMore, setIsLoadingMore] = useState(false)
   const [newStatus, setNewStatus] = useState("")
+  const [eventPage, setEventPage] = useState(1)
+  const [hasMoreEvents, setHasMoreEvents] = useState(true)
+  const [isLoadingMoreEvents, setIsLoadingMoreEvents] = useState(false)
 
   const loadMoreStatuses = async () => {
     if (isLoadingMore || !hasMore) return
@@ -89,6 +92,22 @@ export default function Home() {
     }
   }
 
+  const loadMoreEvents = async () => {
+    if (isLoadingMoreEvents || !hasMoreEvents) return
+    setIsLoadingMoreEvents(true)
+    try {
+      const response = await fetch(`/api/events?page=${eventPage + 1}`)
+      const data = await response.json()
+      setEvents(prev => [...prev, ...data.events])
+      setHasMoreEvents(data.hasMore)
+      setEventPage(prev => prev + 1)
+    } catch (error) {
+      console.error("Failed to load more events:", error)
+    } finally {
+      setIsLoadingMoreEvents(false)
+    }
+  }
+
   useEffect(() => {
     if (!loading && !user) {
       router.push("/login")
@@ -98,10 +117,11 @@ export default function Home() {
   useEffect(() => {
     const fetchEvents = async () => {
       try {
-        const response = await fetch("/api/events")
+        const response = await fetch("/api/events?page=1")
         if (response.ok) {
           const data = await response.json()
-          setEvents(data)
+          setEvents(data.events)
+          setHasMoreEvents(data.hasMore)
         }
       } catch (error) {
         console.error("Failed to fetch events:", error)
@@ -112,6 +132,25 @@ export default function Home() {
 
     if (user) {
       fetchEvents()
+    }
+  }, [user])
+
+  useEffect(() => {
+    const fetchStatuses = async () => {
+      try {
+        const response = await fetch("/api/statuses?page=1")
+        if (response.ok) {
+          const data = await response.json()
+          setStatuses(data.statuses)
+          setHasMore(data.hasMore)
+        }
+      } catch (error) {
+        console.error("Failed to fetch statuses:", error)
+      }
+    }
+
+    if (user) {
+      fetchStatuses()
     }
   }, [user])
 
@@ -232,16 +271,22 @@ export default function Home() {
                 </div>
               ) : (
                 <div className="space-y-3">
-                  {events.slice(0, 3).map((event) => (
+                  {events.map((event) => (
                     <EventCard key={event._id} event={event} variant="compact" />
                   ))}
-                  {events.length > 3 && (
-                    <Link 
-                      href="/events" 
-                      className="block text-center text-sm text-primary hover:text-primary/90 mt-2"
+                  {isLoadingMoreEvents && (
+                    <div className="flex justify-center p-4">
+                      <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-gray-900"></div>
+                    </div>
+                  )}
+                  {hasMoreEvents && !isLoadingMoreEvents && (
+                    <Button
+                      variant="ghost"
+                      className="w-full text-primary hover:text-primary/90"
+                      onClick={loadMoreEvents}
                     >
-                      View all events ({events.length})
-                    </Link>
+                      Load More Events
+                    </Button>
                   )}
                 </div>
               )}

@@ -5,8 +5,21 @@ import Event from "../../../models/Event"
 export async function GET(request: Request) {
   await dbConnect()
   try {
-    const events = await Event.find({}).limit(10)
-    return NextResponse.json(events)
+    const url = new URL(request.url)
+    const page = parseInt(url.searchParams.get("page") || "1")
+    const limit = 5
+    const skip = (page - 1) * limit
+
+    const events = await Event.find({})
+      .sort({ date: 1 })
+      .skip(skip)
+      .limit(limit)
+      .lean()
+
+    const total = await Event.countDocuments()
+    const hasMore = total > skip + limit
+
+    return NextResponse.json({ events, hasMore })
   } catch (e) {
     console.error(e)
     return NextResponse.json({ error: "Failed to fetch events" }, { status: 500 })
