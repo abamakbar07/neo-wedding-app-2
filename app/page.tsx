@@ -28,6 +28,17 @@ interface Event {
   }
 }
 
+interface Comment {
+  _id: string;
+  content: string;
+  author: {
+    _id: string;
+    name: string;
+    image?: string;
+  };
+  createdAt: string;
+}
+
 interface Status {
   _id: string;
   content: string;
@@ -39,6 +50,7 @@ interface Status {
   createdAt: string;
   likes: string[];
   images?: string[];
+  comments: Comment[];
 }
 
 export default function Home() {
@@ -106,6 +118,14 @@ export default function Home() {
     } finally {
       setIsLoadingMoreEvents(false)
     }
+  }
+
+  const handleStatusUpdate = (statusId: string, newStatus: Status) => {
+    setStatuses(prevStatuses => 
+      prevStatuses.map(status => 
+        status._id === statusId ? newStatus : status
+      )
+    );
   }
 
   useEffect(() => {
@@ -234,7 +254,11 @@ export default function Home() {
             {/* Feed Area */}
             <div className="space-y-4">
               {statuses.map((status) => (
-                <StatusCard key={status._id} status={status} />
+                <StatusCard 
+                  key={status._id} 
+                  status={status} 
+                  onStatusUpdate={handleStatusUpdate}
+                />
               ))}
               {isLoadingMore && (
                 <div className="flex justify-center p-4">
